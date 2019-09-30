@@ -26,3 +26,9 @@ plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+library(GenomicRanges)
+library(bsseq)
+library(magrittr)
+library(pheatmap)
+bs_obj_list <- list.files(pattern = "_CG_bsseq_obj.Rds", full.names = TRUE)
+all_bs_obj <- lapply(bs_obj_list, read_bs_obj)
