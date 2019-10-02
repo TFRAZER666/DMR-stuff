@@ -6,7 +6,7 @@ library(pheatmap)
 # Import the methylation data ---------------------------------------------
 
 # Create a list of the BSseq objects that have the CG methylation data
-bs_obj_list <- list.files(path = "~/Desktop/No", pattern = "_CG_bsseq_obj.Rds", full.names = TRUE)
+bs_obj_list <- list.files(path = "~/Desktop/DMR STUFF", pattern = "_CG_bsseq_obj.Rds", full.names = TRUE)
 
 
 # Read a Bs_seq boject from .Rds file
@@ -61,4 +61,10 @@ memory_mCG <- memory_m / memory_cov
 pheatmap(memory_mCG)
 
 ### Now make the heatmap for the ips DMRs
-
+install.packages("data.table")
+library(data.table)
+mean(memory_mCG[ ,1])
+?mean
+mean(memory_mCG[ ,2], trim = 0, na.rm = TRUE)
+mean(memory_mCG[ ,3], trim = 0, na.rm = TRUE)
+mean(memory_mCG[ ,4], trim = 0, na.rm = TRUE)
