@@ -8,7 +8,6 @@ library(pheatmap)
 # Create a list of the BSseq objects that have the CG methylation data
 bs_obj_list <- list.files(path = "~/Desktop/No", pattern = "_CG_bsseq_obj.Rds", full.names = TRUE)
 
-
 # Read a Bs_seq boject from .Rds file
 read_bs_obj <- function(rds_path){
     
@@ -16,7 +15,6 @@ read_bs_obj <- function(rds_path){
     
     return(bs_obj)
 }
-
 
 # Read these objects into the R session in the form of a list
 all_bs_obj <- lapply(bs_obj_list, read_bs_obj)
