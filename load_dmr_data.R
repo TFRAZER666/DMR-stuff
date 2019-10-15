@@ -13,3 +13,29 @@ pheatmap(memory_dmr_mCG)
 
 ### Now make the heatmap for the ips DMRs
 
+pheatmap(ips_dmr_mCG)
+
+# Attempted to understand clusering method
+?pheatmap
+
+# Made heatmap using previously covered information 
+pheatmap(ips_dmr_mCG, 
+         clustering_distance_rows = "correlation",
+         na.rm = TRUE)
+
+# Did the same for memory DMR heatmap
+pheatmap(memory_dmr_mCG, 
+         clustering_distance_rows = "correlation",
+         na.rm = TRUE)
+
+# Encountered an error (this bogie has got some moves)
+pheatmap(memory_dmr_mCG, 
+         clustering_distance_rows = "correlation",
+         na.rm = TRUE,)
+
+# Erased all the irratating little letter values in dataset
+memory_dmr_mCG <- memory_dmr_mCG[is.finite(rowSums(memory_dmr_mCG)),]
+
+# Tried again without a need for .rm function
+pheatmap(memory_dmr_mCG, 
+         clustering_distance_rows = "correlation")
