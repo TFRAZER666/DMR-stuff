@@ -45,3 +45,7 @@ pheatmap(memory_dmr_mCG,
          clustering_distance_rows = "correlation",
          na.rm = TRUE)       
 
+### Attempted to process data further and hopefully get setup to identify DMRs in NSC samples using DMRs seen in iPSC samples
+# Commands from this URL were used to try process data further in any way: https://bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq.html
+# These attempts failed to produce anything more than error messages (unsure if compressed csv files block me from procesing in this way or if I am entering incorrect commands) 
+# If you would be able to start me off (even point me in the right direction) for DMR calling in NSC samples, it would be greatly appreciated 
