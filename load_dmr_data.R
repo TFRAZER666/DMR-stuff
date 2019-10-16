@@ -46,13 +46,18 @@ pheatmap(memory_dmr_mCG,
          na.rm = TRUE)       
 
 # Set up everything to build final heat map for memory DMRs
-pheatmap(memory_dmr_mCG[ ,c(1,4,5,10,8,15,14,12,13)],
+pheatmap(memory_dmr_mCG[ ,c(1,5,7,10,8,15,14,12,13)],
          clustering_distance_rows = "correlation",
          cluster_rows=F,
          cluster_cols=F,
-         na.rm = TRUE)       
+         na.rm = TRUE) 
 
-
+# Set up everything to build final heat map for iDMRs
+pheatmap(ips_dmr_mCG[ ,c(1,5,7,10,8,15,14,12,13)],
+         clustering_distance_rows = "correlation",
+         cluster_rows=F,
+         cluster_cols=F,
+         na.rm = TRUE)   
 
 ### Attempted to process data further and hopefully get setup to identify DMRs in NSC samples using DMRs seen in iPSC samples
 if (!requireNamespace("BiocManager", quietly = TRUE))
