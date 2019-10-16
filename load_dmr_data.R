@@ -53,6 +53,34 @@ pheatmap(memory_dmr_mCG[ ,c(1,4,5,10,8,15,14,12,13)],
          na.rm = TRUE)       
 
 ### Attempted to process data further and hopefully get setup to identify DMRs in NSC samples using DMRs seen in iPSC samples
-# Commands from this URL were used to try process data further in any way: https://bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq.html
-# These attempts failed to produce anything more than error messages (unsure if compressed csv files block me from procesing in this way or if I am entering incorrect commands) 
-# If you would be able to start me off (even point me in the right direction) for DMR calling in NSC samples, it would be greatly appreciated 
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("dmrseq")
+a
+
+library(dmrseq)
+?dmrseq
+library(bsseq)
+
+# Attemped to open memory DMR file vis the new package
+infile <- system.file("memory_dmr_mCG.csv",
+                      package = 'bsseq')
+bismarkBSseq <- read.csv(file = "memory_dmr_mCG.csv")
+
+# Checked to see if data opened was correct
+head(memory_dmr_mCG)
+
+# Unsure if the output for this was appropriate as did not fully match what was seen in the guide
+memory_dmr_mCG <- BSseq(chr = chr, pos = pos,
+            M = M, Cov = Cov, 
+            sampleNames = sampleNames)
+show(memory_dmr_mCG)
+?show         
+
+# I do not understand what this code is trying to do and unable to adjust it to work on my dataset                
+pData(memory_dmr_mCG)$CellType <- celltype
+pData(memory_dmr_mCG)$Replicate <- substr(sampleNames, 
+                              nchar(sampleNames), nchar(sampleNames))
+
+pData(memory_dmr_mCG)
