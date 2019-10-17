@@ -176,9 +176,17 @@ ips_dmr_mCG <- read.csv(file = "ips_dmr_mCG.csv", row.names = 1)
 
 head(ips_dmr_mCG)
 
-# My issue is here, I want to get 'ips_dmr_mCG' into a format that can be opened by pData to resemble the practice data
-# How should I go about putting this data into a format that can be read this way?
-pData(ips_dmr_mCG)
+# start of new processing
+show(ips_dmr_mCG)
+myvars <- c("h9_WGBS", "RL417_P3_32F_Primed.rmdup")
+newdata <- ips_dmr_mCG[myvars]
+show(newdata)
+
+# ERROR: I tried to select for values in H9 column > those in 32 primed column
+# Command runs on the column headings rather than the values underneath
+WHYdata <- subset(newdata, c("h9_WGBS") > c("RL417_P3_32F_Primed.rmdup"))
+show(WHYdata)
+
 
 
 
