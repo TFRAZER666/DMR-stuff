@@ -168,24 +168,557 @@ str(rawDiff)
 
 
 
+#some potentially useful commands 
 
-
-
-# RETRY ON MY DATA
 ips_dmr_mCG <- read.csv(file = "ips_dmr_mCG.csv", row.names = 1)
 
 head(ips_dmr_mCG)
 
-# start of new processing
+colnames(ips_dmr_mCG)
+
 show(ips_dmr_mCG)
 myvars <- c("h9_WGBS", "RL417_P3_32F_Primed.rmdup")
-newdata <- ips_dmr_mCG[myvars]
+newdata <- ips_dmr_mCG[ ,myvars]
 show(newdata)
 
-# ERROR: I tried to select for values in H9 column > those in 32 primed column
-# Command runs on the column headings rather than the values underneath
-WHYdata <- subset(newdata, c("h9_WGBS") > c("RL417_P3_32F_Primed.rmdup"))
-show(WHYdata)
+subset(newdata, (c("h9") - c("32p")) > 0.1)
+
+
+
+
+
+# Selection for hypermethylated iDMRs
+esc <- c(1)
+ipsc <- c(5,7)
+keep <- (memory_dmr_mCG[ ,esc]) > rowMeans(memory_dmr_mCG[ ,ipsc])
+hyper_newdata <- memory_dmr_mCG[keep, ]
+show(hyper_newdata)
+Finaldata <- c("h9_WGBS", 
+               "RL418_P10_32F_Primed.rmdup", 
+               "RL703_all_merge", 
+               "RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged", 
+               "RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge",
+               "RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge", 
+               "RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge",
+               "RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge",
+               "RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge")
+PLEASEdata <- hyper_newdata[ ,Finaldata]
+show(PLEASEdata)
+boxplot(PLEASEdata)
+pheatmap(PLEASEdata, show_rownames = FALSE)
+
+### GGplot the data
+library(reshape2)
+library(ggplot2)
+
+hyper_newdata_melt <- melt(PLEASEdata)
+#ERROR IS OK HERE ^^
+ggplot(hyper_newdata_melt, aes(x=value)) +
+  geom_histogram() + 
+  facet_grid(variable~.) +
+  theme(strip.text.y = element_text(angle = 0))
+
+ggplot(hyper_newdata_melt, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+# USE THIS PLOT AS WELL ^^
+
+head(hyper_newdata_melt)
+table(hyper_newdata_melt$variable)
+
+
+
+
+#SHOW SPECIFIC GRAPHS
+#Here are the 38F commands 
+keep_row <- c("h9_WGBS", "RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge", "RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge")
+keep_row <- c("h9_WGBS", "RL703_all_merge", "RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge")
+#32F commands
+keep_row <- c("h9_WGBS", "RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge", "RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge")
+keep_row <- c("h9_WGBS", "RL418_P10_32F_Primed.rmdup", "RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged")
+
+
+sub_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_row, ]
+ggplot(sub_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+#32 NSCS
+primed <- c("RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge")
+NP <- c("RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge")
+NSCprimed <- PLEASEdata[ ,primed]
+NSCNP <- PLEASEdata[ ,NP]
+t.test(NSCprimed, NSCNP, paired=TRUE)
+
+#32 iPSCs
+primedstem <- c("RL418_P10_32F_Primed.rmdup")
+NPstem<- c("RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged")
+iPSCprimed <- PLEASEdata[ ,primedstem]
+iPSCNP <- PLEASEdata[ ,NPstem]
+t.test(iPSCprimed, iPSCNP, paired=TRUE)
+
+#38F NSCs
+primed <- c("RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge")
+NP <- c("RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge")
+NSCprimed <- PLEASEdata[ ,primed]
+NSCNP <- PLEASEdata[ ,NP]
+t.test(NSCprimed, NSCNP, paired=TRUE)
+
+#38F iPSCs
+primedstem <- c("RL703_all_merge")
+NPstem<- c("RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge")
+iPSCprimed <- PLEASEdata[ ,primedstem]
+iPSCNP <- PLEASEdata[ ,NPstem]
+t.test(iPSCprimed, iPSCNP, paired=TRUE)
+
+
+
+
+
+
+
+########## THE FINAL ANALYSIS
+#HYPOMETHYLATED MEMORY DMRS
+memory_dmr_mCG <- read.csv(file = "memory_dmr_mCG.csv", row.names = 1)
+esc <- c(1)
+ipsc <- c(5,7)
+keep <- (memory_dmr_mCG[ ,esc]) > rowMeans(memory_dmr_mCG[ ,ipsc])
+hyper_newdata <- memory_dmr_mCG[keep, ]
+show(hyper_newdata)
+Finaldata <- c("h9_WGBS", 
+               "RL418_P10_32F_Primed.rmdup", 
+               "RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged", 
+               "RL703_all_merge",
+               "RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge", 
+               "RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge",
+               "RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge", 
+               "RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge",
+               "RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge")
+               
+PLEASEdata <- hyper_newdata[ ,Finaldata]
+pheatmap(PLEASEdata, show_rownames = FALSE)
+
+
+hyper_newdata_melt <- melt(PLEASEdata)
+#ERROR IS OK HERE ^^
+ggplot(hyper_newdata_melt, aes(x=value)) +
+  geom_histogram() + 
+  facet_grid(variable~.) +
+  theme(strip.text.y = element_text(angle = 0))
+
+ggplot(hyper_newdata_melt, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+# USE THIS PLOT AS WELL ^^
+
+pheatmap(PLEASEdata[ ,c(1,2,3,4,5,6,7,8,9)],
+         clustering_distance_rows = "correlation",
+         cluster_rows=F,
+         cluster_cols=F,
+         na.rm = TRUE) 
+
+### Comparisons drawn between 38ipsc
+keep_38iPSCrow <- c("h9_WGBS", "RL703_all_merge", "RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_38iPSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedstem <- c("RL703_all_merge")
+NPstem<- c("RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge")
+iPSCprimed2 <- PLEASEdata[ ,primedstem]
+iPSCNP <- PLEASEdata[ ,NPstem]
+wilcox.test(iPSCprimed2, iPSCNP, paired = TRUE)
+?wilcox.test
+
+
+### Comparisons drawn between 38NSCs
+keep_38NSCrow <- c("h9_WGBS", "RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge", "RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_38NSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedNSC <- c("RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge")
+NPNSC<- c("RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge")
+NSCprimed <- PLEASEdata[ ,primedNSC]
+NSCNP <- PLEASEdata[ ,NPNSC]
+wilcox.test(NSCprimed, NSCNP, paired = TRUE)
+
+
+### Comparisons drawn between 32ipsc
+keep_32iPSCrow <- c("h9_WGBS", "RL418_P10_32F_Primed.rmdup", "RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_32iPSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedstem <- c("RL418_P10_32F_Primed.rmdup")
+NPstem<- c("RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged")
+iPSCprimed <- PLEASEdata[ ,primedstem]
+iPSCNP <- PLEASEdata[ ,NPstem]
+wilcox.test(iPSCprimed, iPSCNP, paired = TRUE)
+
+### Comparisons drawn between 32NSCs
+keep_32NSCrow <- c("h9_WGBS", "RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge", "RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_32NSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedNSC <- c("RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge")
+NPNSC<- c("RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge")
+NSCprimed <- PLEASEdata[ ,primedNSC]
+NSCNP1 <- PLEASEdata[ ,NPNSC]
+wilcox.test(NSCprimed, NSCNP1, paired = TRUE)
+
+
+
+
+
+
+
+
+########## THE FINAL ANALYSIS
+# HYPERMETHYLATION MEMORY DMRS
+memory_dmr_mCG <- read.csv(file = "memory_dmr_mCG.csv", row.names = 1)
+esc <- c(1)
+ipsc <- c(5,7)
+keep <- (memory_dmr_mCG[ ,esc]) < rowMeans(memory_dmr_mCG[ ,ipsc])
+hyper_newdata <- memory_dmr_mCG[keep, ]
+show(hyper_newdata)
+Finaldata <- c("h9_WGBS", 
+               "RL418_P10_32F_Primed.rmdup", 
+               "RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged", 
+               "RL703_all_merge",
+               "RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge", 
+               "RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge",
+               "RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge", 
+               "RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge",
+               "RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge")
+
+PLEASEdata <- hyper_newdata[ ,Finaldata]
+pheatmap(PLEASEdata, show_rownames = FALSE)
+
+
+hyper_newdata_melt <- melt(PLEASEdata)
+#ERROR IS OK HERE ^^
+ggplot(hyper_newdata_melt, aes(x=value)) +
+  geom_histogram() + 
+  facet_grid(variable~.) +
+  theme(strip.text.y = element_text(angle = 0))
+
+ggplot(hyper_newdata_melt, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+# USE THIS PLOT AS WELL ^^
+
+pheatmap(PLEASEdata[ ,c(1,2,3,4,5,6,7,8,9)],
+         clustering_distance_rows = "correlation",
+         cluster_rows=F,
+         cluster_cols=F,
+         na.rm = TRUE) 
+
+### Comparisons drawn between 38ipsc
+keep_38iPSCrow <- c("h9_WGBS", "RL703_all_merge", "RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_38iPSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedstem <- c("RL703_all_merge")
+NPstem<- c("RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge")
+iPSCprimed2 <- PLEASEdata[ ,primedstem]
+iPSCNP <- PLEASEdata[ ,NPstem]
+wilcox.test(iPSCprimed2, iPSCNP, paired = TRUE)
+?wilcox.test
+
+
+### Comparisons drawn between 38NSCs
+keep_38NSCrow <- c("h9_WGBS", "RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge", "RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_38NSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedNSC <- c("RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge")
+NPNSC<- c("RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge")
+NSCprimed <- PLEASEdata[ ,primedNSC]
+NSCNP <- PLEASEdata[ ,NPNSC]
+wilcox.test(NSCprimed, NSCNP, paired = TRUE)
+
+
+### Comparisons drawn between 32ipsc
+keep_32iPSCrow <- c("h9_WGBS", "RL418_P10_32F_Primed.rmdup", "RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_32iPSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedstem <- c("RL418_P10_32F_Primed.rmdup")
+NPstem<- c("RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged")
+iPSCprimed <- PLEASEdata[ ,primedstem]
+iPSCNP <- PLEASEdata[ ,NPstem]
+wilcox.test(iPSCprimed, iPSCNP, paired = TRUE)
+
+### Comparisons drawn between 32NSCs
+keep_32NSCrow <- c("h9_WGBS", "RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge", "RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_32NSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedNSC <- c("RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge")
+NPNSC<- c("RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge")
+NSCprimed <- PLEASEdata[ ,primedNSC]
+NSCNP1 <- PLEASEdata[ ,NPNSC]
+wilcox.test(NSCprimed, NSCNP1, paired = TRUE)
+
+
+
+
+
+
+########## THE FINAL ANALYSIS
+#HYPOMETHYLATED IDMRS
+ips_dmr_mCG <- read.csv(file = "ips_dmr_mCG.csv", row.names = 1)
+esc <- c(1)
+ipsc <- c(5,7)
+keep <- (ips_dmr_mCG[ ,esc]) > rowMeans(ips_dmr_mCG[ ,ipsc])
+hyper_newdata <- ips_dmr_mCG[keep, ]
+show(hyper_newdata)
+Finaldata <- c("h9_WGBS", 
+               "RL418_P10_32F_Primed.rmdup", 
+               "RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged", 
+               "RL703_all_merge",
+               "RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge", 
+               "RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge",
+               "RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge", 
+               "RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge",
+               "RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge")
+
+PLEASEdata <- hyper_newdata[ ,Finaldata]
+pheatmap(PLEASEdata, show_rownames = FALSE)
+
+
+hyper_newdata_melt <- melt(PLEASEdata)
+#ERROR IS OK HERE ^^
+ggplot(hyper_newdata_melt, aes(x=value)) +
+  geom_histogram() + 
+  facet_grid(variable~.) +
+  theme(strip.text.y = element_text(angle = 0))
+
+ggplot(hyper_newdata_melt, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+# USE THIS PLOT AS WELL ^^
+
+pheatmap(PLEASEdata[ ,c(1,2,3,4,5,6,7,8,9)],
+         clustering_distance_rows = "correlation",
+         cluster_rows=F,
+         cluster_cols=F,
+         na.rm = TRUE) 
+
+### Comparisons drawn between 38ipsc
+keep_38iPSCrow <- c("h9_WGBS", "RL703_all_merge", "RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_38iPSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedstem <- c("RL703_all_merge")
+NPstem<- c("RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge")
+iPSCprimed2 <- PLEASEdata[ ,primedstem]
+iPSCNP <- PLEASEdata[ ,NPstem]
+wilcox.test(iPSCprimed2, iPSCNP, paired = TRUE)
+?wilcox.test
+
+
+### Comparisons drawn between 38NSCs
+keep_38NSCrow <- c("h9_WGBS", "RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge", "RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_38NSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedNSC <- c("RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge")
+NPNSC<- c("RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge")
+NSCprimed <- PLEASEdata[ ,primedNSC]
+NSCNP <- PLEASEdata[ ,NPNSC]
+wilcox.test(NSCprimed, NSCNP, paired = TRUE)
+
+
+### Comparisons drawn between 32ipsc
+keep_32iPSCrow <- c("h9_WGBS", "RL418_P10_32F_Primed.rmdup", "RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_32iPSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedstem <- c("RL418_P10_32F_Primed.rmdup")
+NPstem<- c("RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged")
+iPSCprimed <- PLEASEdata[ ,primedstem]
+iPSCNP <- PLEASEdata[ ,NPstem]
+wilcox.test(iPSCprimed, iPSCNP, paired = TRUE)
+
+### Comparisons drawn between 32NSCs
+keep_32NSCrow <- c("h9_WGBS", "RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge", "RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_32NSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedNSC <- c("RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge")
+NPNSC<- c("RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge")
+NSCprimed <- PLEASEdata[ ,primedNSC]
+NSCNP1 <- PLEASEdata[ ,NPNSC]
+wilcox.test(NSCprimed, NSCNP1, paired = TRUE)
+
+
+
+
+
+
+
+
+
+########## THE FINAL ANALYSIS
+#HYPERMETHYLATED IDMRS
+ips_dmr_mCG <- read.csv(file = "ips_dmr_mCG.csv", row.names = 1)
+esc <- c(1)
+ipsc <- c(5,7)
+keep <- (ips_dmr_mCG[ ,esc]) < rowMeans(ips_dmr_mCG[ ,ipsc])
+hyper_newdata <- ips_dmr_mCG[keep, ]
+show(hyper_newdata)
+Finaldata <- c("h9_WGBS", 
+               "RL418_P10_32F_Primed.rmdup", 
+               "RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged", 
+               "RL703_all_merge",
+               "RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge", 
+               "RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge",
+               "RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge", 
+               "RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge",
+               "RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge")
+
+PLEASEdata <- hyper_newdata[ ,Finaldata]
+pheatmap(PLEASEdata, show_rownames = FALSE)
+
+
+hyper_newdata_melt <- melt(PLEASEdata)
+#ERROR IS OK HERE ^^
+ggplot(hyper_newdata_melt, aes(x=value)) +
+  geom_histogram() + 
+  facet_grid(variable~.) +
+  theme(strip.text.y = element_text(angle = 0))
+
+ggplot(hyper_newdata_melt, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+# USE THIS PLOT AS WELL ^^
+
+pheatmap(PLEASEdata[ ,c(1,2,3,4,5,6,7,8,9)],
+         clustering_distance_rows = "correlation",
+         cluster_rows=F,
+         cluster_cols=F,
+         na.rm = TRUE) 
+
+### Comparisons drawn between 38ipsc
+keep_38iPSCrow <- c("h9_WGBS", "RL703_all_merge", "RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_38iPSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedstem <- c("RL703_all_merge")
+NPstem<- c("RL837_2017_09_28_P12_plus_10_38F_SmithR_to_E8_merge")
+iPSCprimed2 <- PLEASEdata[ ,primedstem]
+iPSCNP <- PLEASEdata[ ,NPstem]
+wilcox.test(iPSCprimed2, iPSCNP, paired = TRUE)
+?wilcox.test
+
+
+### Comparisons drawn between 38NSCs
+keep_38NSCrow <- c("h9_WGBS", "RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge", "RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_38NSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedNSC <- c("RL1812_2019_09_19_38F_NSCs_primed_p8_S3_all_lanes_merge")
+NPNSC<- c("RL1811_2019_09_19_38F_NSCs_N2P_p8_S2_all_lanes_merge")
+NSCprimed <- PLEASEdata[ ,primedNSC]
+NSCNP <- PLEASEdata[ ,NPNSC]
+wilcox.test(NSCprimed, NSCNP, paired = TRUE)
+
+
+### Comparisons drawn between 32ipsc
+keep_32iPSCrow <- c("h9_WGBS", "RL418_P10_32F_Primed.rmdup", "RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_32iPSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedstem <- c("RL418_P10_32F_Primed.rmdup")
+NPstem<- c("RL936_32F_P11_plus_10_32F_SmithR_to_E8_rep1_all_merged")
+iPSCprimed <- PLEASEdata[ ,primedstem]
+iPSCNP <- PLEASEdata[ ,NPstem]
+wilcox.test(iPSCprimed, iPSCNP, paired = TRUE)
+
+### Comparisons drawn between 32NSCs
+keep_32NSCrow <- c("h9_WGBS", "RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge", "RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge")
+
+new_dat <- hyper_newdata_melt[hyper_newdata_melt$variable %in% keep_32NSCrow, ]
+ggplot(new_dat, aes(x=variable, y = value)) +
+  geom_boxplot(notch = TRUE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+?geom_boxplot
+primedNSC <- c("RL1813_2019_09_19_32F_NSCs_primed_p7_S4_all_lanes_merge")
+NPNSC<- c("RL1810_2019_09_19_32F_NSCs_N2P_p8_S1_all_lanes_merge")
+NSCprimed <- PLEASEdata[ ,primedNSC]
+NSCNP1 <- PLEASEdata[ ,NPNSC]
+wilcox.test(NSCprimed, NSCNP1, paired = TRUE)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
